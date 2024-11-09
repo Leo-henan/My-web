@@ -1,0 +1,2096 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leo's Blog</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        @font-face {
+            font-family: 'HarmonyOS Sans SC Medium';
+            src: url('Sans/HarmonyOS_Sans_SC_Medium.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        /* 将所有元素的字体设置为 HarmonyOS Sans SC Medium */
+        * {
+            font-family: 'HarmonyOS Sans SC Medium', sans-serif;
+        }
+
+        /* 其他样式保持不变 */
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --background-color: #f5f6fa;
+            --text-color: #34495e;
+            --header-color: #2c3e50;
+            --nav-color: #34495e;
+        }
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+        #app {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        #header {
+            background-color: var(--header-color);
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        #content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-bottom: 70px;
+        }
+        #nav {
+            display: flex;
+            justify-content: space-around;
+            background-color: var(--nav-color);
+            padding: 10px 0;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+        }
+        .nav-item {
+            font-family: 'HarmonyOS Sans SC Medium', sans-serif;
+            text-align: center;
+            text-decoration: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            transition: background-color 0.3s ease;
+        }
+        .nav-item.active {
+            background-color: var(--primary-color);
+        }
+        .page {
+            display: none;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            margin: 20px;
+        }
+        .page.active {
+            display: block;
+        }
+        .photo-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .photo-gallery img {
+            width: 480px;
+            height: 270px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin: 15px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .photo-gallery img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+        #chat-messages {
+            height: 200px; /* 减小高度 */
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #f9f9f9;
+        }
+        #chat-input {
+            display: flex;
+            margin-top: 10px; /* 添加上边距 */
+        }
+        #user-input {
+            flex-grow: 1;
+            margin-right: 10px;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 20px;
+            outline: none;
+        }
+        #send-message {
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        #send-message:hover {
+            background-color: var(--secondary-color);
+        }
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-top: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+        }
+        .social-icon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-color);
+            transition: transform 0.3s ease;
+        }
+        .social-icon:hover {
+            transform: scale(1.1);
+        }
+        .social-icon i {
+            font-size: 40px;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0;
+            border-radius: 50%;
+            margin-bottom: 10px;
+        }
+        .social-icon span {
+            font-size: 14px;
+            text-align: center;
+        }
+        .wechat-qr {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .wechat-qr img {
+            max-width: 300px;
+            max-height: 300px;
+        }
+        .close-qr {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            font-size: 20px;
+        }
+        /* 保持原有的样式不变，添加以下新样式 */
+        .game-links {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-top: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+        }
+        .game-link {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-color);
+            transition: transform 0.3s ease;
+        }
+        .game-link:hover {
+            transform: scale(1.1);
+        }
+        .game-link i {
+            font-size: 40px;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0;
+            border-radius: 50%;
+            margin-bottom: 10px;
+        }
+        .game-link span {
+            font-size: 14px;
+            text-align: center;
+        }
+        #header h1 {
+            font-family: 'HarmonyOS Sans SC Medium', sans-serif;
+            margin-bottom: 10px;
+        }
+        
+        #header .subtitle {
+            font-family: 'HarmonyOS Sans SC Medium', sans-serif;
+            font-size: 1.2em;
+            margin-top: 0;
+        }
+        /* 添加新样式 */
+        #ai-chat {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        #welcome-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: var(--background-color);
+        }
+        #welcome-title {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+        #enter-arrow {
+            font-size: 2em;
+            cursor: pointer;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: white;
+            border: 2px solid #1E90FF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        #enter-arrow::after {
+            content: '↓';
+            color: black;
+        }
+        #enter-arrow:hover {
+            background-color: #1E90FF;
+        }
+        #enter-arrow:hover::after {
+            color: white;
+        }
+        /* 现有样式保持不变 */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+        .lightbox {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            text-align: center;
+        }
+        .lightbox-content {
+            position: relative;
+            top: 50%;
+            transform: translateY(-50%);
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .lightbox-image-container {
+            max-height: 80vh;
+            overflow: hidden;
+            margin-bottom: 20px;
+            cursor: move; /* 添加这行，表示可拖动 */
+        }
+        .lightbox img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+            user-select: none; /* 防止拖动时选中图片 */
+        }
+        .lightbox-controls {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+        }
+        #image-size-slider {
+            width: 200px;
+            margin: 0 10px;
+        }
+        .lightbox-button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 0 5px;
+            cursor: pointer;
+        }
+        /* 现有样式保持不变，添加以下媒体查询和新样式 */
+        @media (max-width: 768px) {
+            #header h1 {
+                font-size: 1.5em;
+            }
+            #header .subtitle {
+                font-size: 1em;
+            }
+            .photo-gallery img {
+                width: 100%;
+                height: auto;
+                margin: 10px 0;
+            }
+            .social-icons, .game-links {
+                gap: 15px;
+            }
+            .social-icon i, .game-link i {
+                font-size: 30px;
+                width: 60px;
+                height: 60px;
+            }
+            .social-icon span, .game-link span {
+                font-size: 12px;
+            }
+            #nav {
+                padding: 5px 0;
+            }
+            .nav-item {
+                font-size: 14px;
+                padding: 5px 8px;
+            }
+            #chat-messages {
+                height: 60vh;
+            }
+            #user-input {
+                width: 70%;
+            }
+            #send-message {
+                width: 25%;
+            }
+            .lightbox-controls {
+                flex-wrap: wrap;
+            }
+            #image-size-slider {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+
+        /* 添加触摸设备支持 */
+        @media (hover: none) {
+            .lightbox-image-container {
+                overflow: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        .friend-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .friend-link {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-color);
+            width: 100px;
+            transition: transform 0.3s ease;
+        }
+
+        .friend-link:hover {
+            transform: scale(1.1);
+        }
+
+        .friend-link img {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .friend-link span {
+            font-size: 12px;
+            text-align: center;
+            word-break: break-word;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .friend-links {
+                gap: 15px;
+                padding: 15px;
+            }
+
+            .friend-link {
+                width: 80px;
+            }
+
+            .friend-link img {
+                width: 30px;
+                height: 30px;
+            }
+
+            .friend-link span {
+                font-size: 11px;
+            }
+        }
+
+        /* 添加子栏目容器样式 */
+        .section-container {
+            margin: 30px 0;
+            padding: 25px;
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .section-container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        /* 子栏目标题样式 */
+        .section-title {
+            color: var(--header-color);
+            font-size: 1.5em;
+            margin-bottom: 25px;
+            text-align: center;
+            position: relative;
+            padding: 0 0 5px;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(to right, transparent, var(--primary-color), transparent);
+            border-radius: 2px;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .section-title {
+                font-size: 1.3em;
+                margin-bottom: 20px;
+            }
+
+            .section-title::after {
+                width: 40px;
+                height: 2px;
+            }
+
+            .section-container {
+                margin: 20px 0;
+                padding: 20px;
+            }
+        }
+
+        .music-player {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .music-info {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .song-title {
+            font-size: 1.2em;
+            color: var(--header-color);
+            margin-bottom: 5px;
+        }
+
+        .artist-name {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .progress-area {
+            margin: 20px 0;
+        }
+
+        .progress-bar {
+            height: 6px;
+            width: 100%;
+            background: #f0f0f0;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .progress {
+            height: 100%;
+            width: 0%;
+            background: var(--primary-color);
+            border-radius: 3px;
+            transition: width 0.1s linear;
+        }
+
+        .time {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            color: #666;
+            font-size: 0.8em;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            margin: 20px 0;
+        }
+
+        .controls i {
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--header-color);
+            transition: all 0.3s ease;
+        }
+
+        .controls i:hover {
+            color: var(--primary-color);
+            transform: scale(1.1);
+        }
+
+        .volume-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .volume-slider {
+            flex: 1;
+            height: 4px;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background: #f0f0f0;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .playlist {
+            margin-top: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .playlist-header {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .playlist-header h4 {
+            margin: 0;
+            color: var(--header-color);
+        }
+
+        .playlist-items {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .playlist-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .playlist-item:hover {
+            background: #e3f2fd;
+            transform: translateX(5px);
+        }
+
+        .playlist-item.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .playlist-item-info {
+            flex: 1;
+        }
+
+        .playlist-item-title {
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+
+        .playlist-item-artist {
+            font-size: 0.8em;
+            color: #666;
+        }
+
+        .playlist-item.active .playlist-item-artist {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .playlist-item-duration {
+            margin-left: 15px;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .playlist-item.active .playlist-item-duration {
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .playlist-items {
+                max-height: 250px;
+            }
+            
+            .playlist-item {
+                padding: 8px 12px;
+            }
+        }
+
+        /* 相册容器样式 */
+        .gallery-container {
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            will-change: transform; /* 优化性能 */
+        }
+
+        /* 相册网格布局 */
+        .photo-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+            padding: 15px;
+            contain: content; /* 优化渲染性能 */
+        }
+
+        /* 图片容器样式 */
+        .photo-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transform: translateZ(0); /* 启用GPU加速 */
+            will-change: transform; /* 优化动画性能 */
+            transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+            background: #f5f5f5; /* 添加占位景色 */
+        }
+
+        .photo-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        /* 图片样式 */
+        .photo-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            transform: translateZ(0); /* 启用GPU加速 */
+            backface-visibility: hidden; /* 防止闪烁 */
+            transition: transform 0.2s ease-out;
+        }
+
+        .photo-item:hover img {
+            transform: scale(1.03);
+        }
+
+        /* 图片标题样式 */
+        .photo-title {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 8px;
+            background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+            color: white;
+            font-size: 0.9em;
+            opacity: 0;
+            transform: translateZ(0); /* 启用GPU加速 */
+            transition: opacity 0.2s ease-out;
+        }
+
+        .photo-item:hover .photo-title {
+            opacity: 1;
+        }
+
+        /* Lightbox 样式优化 */
+        .lightbox {
+            background-color: rgba(0,0,0,0.9);
+        }
+
+        .lightbox-content {
+            padding: 20px;
+        }
+
+        .lightbox-image-container {
+            position: relative;
+            margin: auto;
+            max-width: 90vw;
+            max-height: 80vh;
+        }
+
+        .lightbox-controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            padding: 15px 25px;
+            border-radius: 50px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .lightbox-button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .lightbox-button:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .photo-gallery {
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+                gap: 12px;
+                padding: 12px;
+            }
+
+            .photo-item {
+                border-radius: 8px;
+            }
+
+            .photo-item img {
+                height: 160px;
+            }
+        }
+
+        .loading-indicator {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+            text-align: center;
+        }
+
+        .playlist-item {
+            position: relative;
+        }
+
+        .playlist-item.loading::after {
+            content: '加载中...';
+            position: absolute;
+            right: 10px;
+            color: #666;
+            font-size: 0.8em;
+        }
+
+        /* 修改友情链接相关的样式 */
+        /* 链接分类容器样式 */
+        .link-category {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        /* 分类标题样式 */
+        .link-category h4 {
+            color: var(--header-color);
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        /* 链接项样式 */
+        .friend-link {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-color);
+        }
+
+        .friend-link:hover {
+            background: #e3f2fd;
+        }
+
+        /* 调整图标样式 */
+        .friend-link img {
+            width: 24px;
+            height: 24px;
+            padding: 4px;
+            margin-right: 10px;
+            background: white;
+            border-radius: 6px;
+        }
+
+        /* 调整文字大小 */
+        .friend-link span {
+            font-size: 0.9em;
+            color: #444;
+        }
+
+        /* 分类内的链接布局 */
+        .link-category .friend-links {
+            display: grid;
+            gap: 10px;
+            padding: 0;
+        }
+
+        /* 根据不同类别设置不同的列数 */
+        .link-category:nth-child(1) .friend-links, /* AI助手 */
+        .link-category:nth-child(2) .friend-links { /* 云服务 */
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .link-category:nth-child(3) .friend-links, /* 音乐平台 */
+        .link-category:nth-child(4) .friend-links { /* 视频平台 */
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .link-category:nth-child(5) .friend-links, /* 实用工具 */
+        .link-category:nth-child(6) .friend-links, /* 教育资源 */
+        .link-category:nth-child(7) .friend-links { /* 新闻媒体 */
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        /* 响应式设计优化 */
+        @media (max-width: 1200px) {
+            .link-category .friend-links {
+                grid-template-columns: repeat(3, 1fr) !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .link-category .friend-links {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+
+            .friend-link {
+                padding: 10px;
+            }
+
+            .friend-link img {
+                width: 20px;
+                height: 20px;
+            }
+
+            .friend-link span {
+                font-size: 0.85em;
+            }
+
+            .link-category h4 {
+                font-size: 1.1em;
+                padding: 8px 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .link-category .friend-links {
+                grid-template-columns: repeat(1, 1fr) !important;
+            }
+        }
+
+        /* 关于我页面样式 */
+        .about-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* 个人信息卡片样式 */
+        .profile-card {
+            display: flex;
+            align-items: center;
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .profile-photo {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 30px;
+        }
+
+        .profile-info {
+            flex: 1;
+        }
+
+        .profile-info h3 {
+            margin: 0;
+            font-size: 1.8em;
+            color: var(--header-color);
+        }
+
+        .profile-info .subtitle {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* 内容区域样式 */
+        .about-content {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .content-section {
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .content-section h4 {
+            color: var(--header-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            border-left: 3px solid var(--primary-color);
+            padding-left: 10px;
+        }
+
+        .content-section p {
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+
+        /* 网站导航列表样式 */
+        .site-nav {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .site-nav li {
+            margin: 10px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .site-nav li::before {
+            content: '•';
+            color: var(--primary-color);
+            position: absolute;
+            left: 0;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .profile-card {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .profile-photo {
+                margin: 0 0 20px 0;
+                width: 120px;
+                height: 120px;
+            }
+
+            .about-content {
+                grid-template-columns: 1fr;
+            }
+
+            .content-section {
+                padding: 15px;
+            }
+        }
+
+        .chat-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .chat-messages {
+            height: 60vh;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        .message {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .user-message {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            margin: 0 10px;
+            flex-shrink: 0;
+        }
+
+        .bot-message .message-avatar {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .user-message .message-avatar {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 15px;
+            font-size: 0.95em;
+            line-height: 1.4;
+        }
+
+        .bot-message .message-content {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-top-left-radius: 5px;
+        }
+
+        .user-message .message-content {
+            background: #e3f2fd;
+            border-top-right-radius: 5px;
+        }
+
+        .chat-input-container {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #eee;
+        }
+
+        #user-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 25px;
+            margin-right: 10px;
+            font-size: 0.95em;
+            transition: border-color 0.3s ease;
+        }
+
+        #user-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        #send-message {
+            width: 45px;
+            height: 45px;
+            border: none;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #send-message:hover {
+            background: var(--secondary-color);
+            transform: scale(1.05);
+        }
+
+        #send-message i {
+            font-size: 1.2em;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 添加滚动条样式 */
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 3px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #999;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .chat-container {
+                margin: 10px;
+            }
+
+            .chat-messages {
+                height: calc(70vh - 100px);
+            }
+
+            .message-content {
+                max-width: 85%;
+                font-size: 0.9em;
+            }
+        }
+        .update-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .update-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        .update-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .update-header h3 {
+            margin: 0;
+            color: var(--primary-color);
+        }
+
+        .close-modal {
+            cursor: pointer;
+            font-size: 24px;
+            color: #666;
+        }
+
+        .update-body {
+            padding: 10px 0;
+        }
+
+        .update-item {
+            margin: 10px 0;
+            padding: 8px;
+            border-radius: 6px;
+            background: #f5f5f5;
+        }
+
+        .update-item:nth-child(1) {
+            margin-top: 0;
+        }
+
+        .update-body .update-item:nth-child(1) { content: "1. 添加了一些更好看的图片"; }
+        .update-body .update-item:nth-child(2) { content: "2. AI对话界面优化"; }
+        .update-body .update-item:nth-child(3) { content: "3. 关于我界面优化"; }
+        .update-body .update-item:nth-child(4) { content: "4. 联系我界面优化"; }
+        .update-body .update-item:nth-child(5) { content: "5. 整体性能优化"; }
+        .update-body .update-item:nth-child(6) { content: "6. 链接统一移动到了第四个页面"; }
+        </div>
+
+        /* 添加弹窗样式 */
+        <style>
+            .update-modal {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 1000;
+                animation: fadeIn 0.3s ease;
+            }
+
+            .update-content {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: white;
+                padding: 20px;
+                border-radius: 15px;
+                width: 90%;
+                max-width: 500px;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            }
+
+            .update-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+                padding-bottom: 10px;
+                border-bottom: 2px solid var(--primary-color);
+            }
+
+            .update-header h3 {
+                margin: 0;
+                color: var(--header-color);
+                font-size: 1.4em;
+            }
+
+            .close-modal {
+                font-size: 24px;
+                cursor: pointer;
+                color: #666;
+                transition: color 0.2s ease;
+            }
+
+            .close-modal:hover {
+                color: var(--primary-color);
+            }
+
+            .update-body {
+                padding: 10px 0;
+            }
+
+            .update-item {
+                padding: 10px 15px;
+                margin: 8px 0;
+                border-radius: 8px;
+                background: #f8f9fa;
+                transition: transform 0.2s ease;
+            }
+
+            .update-item:hover {
+                transform: translateX(5px);
+            }
+
+            .update-item.highlight {
+                background: var(--primary-color);
+                color: white;
+                font-weight: bold;
+                font-size: 1.1em;
+                padding: 12px 15px;
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                }
+                to {
+                    opacity: 1;
+                }
+            }
+
+            @media (max-width: 768px) {
+                .update-content {
+                    width: 95%;
+                    padding: 15px;
+                }
+
+                .update-header h3 {
+                    font-size: 1.2em;
+                }
+
+                .update-item {
+                    font-size: 0.9em;
+                }
+
+                .update-item.highlight {
+                    font-size: 1em;
+                }
+            }
+        </style>
+    </style>
+</head>
+<body>
+    <div id="welcome-screen">
+        <h1 id="welcome-title">欢迎来到 Leo's Blog</h1>
+        <div id="enter-arrow"></div>
+    </div>
+
+    <div id="app" style="display: none;">
+        <header id="header">
+            <h1>Leo's Blog</h1>
+            <p class="subtitle">—— Welcome to my world ！</p>
+        </header>
+        <div id="content">
+            <div id="gallery" class="page">
+                <h2>我的相册</h2>
+                <div class="gallery-container">
+                    <div class="photo-gallery">
+                        <div class="photo-item">
+                            <img src="images/image1.jpg" alt="图片1" onclick="openLightbox(this.src)" 
+                                 onerror="this.onerror=null; this.src='https://via.placeholder.com/480x270?text=图片1';" loading="lazy"
+                                 decoding="async"
+                                 width="300"
+                                 height="200">
+                            <div class="photo-title">图片1</div>
+                        </div>
+                        <div class="photo-item">
+                            <img src="images/image2.jpg" alt="图片2" onclick="openLightbox(this.src)"
+                                 onerror="this.onerror=null; this.src='https://via.placeholder.com/480x270?text=图片2';" loading="lazy">
+                            <div class="photo-title">图片2</div>
+                        </div>
+                        <div class="photo-item">
+                            <img src="images/image3.jpg" alt="图片3" onclick="openLightbox(this.src)"
+                                 onerror="this.onerror=null; this.src='https://via.placeholder.com/480x270?text=图片3';" loading="lazy">
+                            <div class="photo-title">图片3</div>
+                        </div>
+                        <div class="photo-item">
+                            <img src="images/image4.jpg" alt="图片4" onclick="openLightbox(this.src)"
+                                 onerror="this.onerror=null; this.src='https://via.placeholder.com/480x270?text=图片4';" loading="lazy">
+                            <div class="photo-title">图片4</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="ai-chat" class="page">
+                <h2>与AI对话</h2>
+                <div class="chat-container">
+                    <div id="chat-messages" class="chat-messages">
+                        <!-- 欢迎消息 -->
+                        <div class="message bot-message">
+                            <div class="message-avatar">AI</div>
+                            <div class="message-content">
+                                <p>你好！我是你的AI助手，有什么我可以帮你的吗？</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-input-container">
+                        <input type="text" id="user-input" placeholder="输入你想说的话...">
+                        <button id="send-message">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div id="about" class="page">
+                <h2>关于我</h2>
+                <div class="about-container">
+                    <!-- 个人信息卡片 -->
+                    <div class="profile-card">
+                        <img src="images/profile-photo.jpg" alt="我的照片" class="profile-photo">
+                        <div class="profile-info">
+                            <h3>Leo</h3>
+                            <p class="subtitle">高中生</p>
+                        </div>
+                    </div>
+
+                    <!-- 自我介绍内容 -->
+                    <div class="about-content">
+                        <div class="content-section">
+                            <h4>个人简介</h4>
+                            <p>Hello, Everybody! 我是Leo,一个高中生。</p>
+                            <p>我的爱好是听音乐和看一些有趣的视频，来拓宽我的视野。</p>
+                            <p>我比较喜欢的学科是英语，它可以增强我的社交和浏览他国文章能力。</p>
+                        </div>
+
+                        <div class="content-section">
+                            <h4>家乡介绍</h4>
+                            <p>我的老家南阳，历史悠久，文化深厚，欢迎大家前来游玩。</p>
+                            <p>品尝河南的胡辣汤、油条、方城烩面，感受中原魅力！</p>
+                        </div>
+
+                        <div class="content-section">
+                            <h4>兴趣爱好</h4>
+                            <p>我最喜欢的歌手是G.E.M.邓紫棋，她的音乐作和励志故事激励着我不断前行。</p>
+                            <p>最喜欢看一些和科技有关的短视频，这是我的兴趣所在。</p>
+                        </div>
+
+                        <div class="content-section">
+                            <h4>网站导航</h4>
+                            <ul class="site-nav">
+                                <li>相册：精选的个人图片展示</li>
+                                <li>AI对话：智能聊天助手，随时为您解答问题</li>
+                                <li>关于我：个人介绍和网站信息</li>
+                                <li>文件分享：实用文件和游戏资源</li>
+                                <li>社交圈：个人社交账号和实用网站链接</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="files" class="page">
+                <h2>文件分享</h2>
+                
+                <!-- 游戏链接部分 -->
+                <div class="section-container">
+                    <h3 class="section-title">游戏链接（两个链接是一样的）</h3>
+                    <div class="game-links">
+                        <a href="https://www.123865.com/s/RJMhjv-XiDGd" target="_blank" class="game-link">
+                            <i class="fas fa-gamepad"></i>
+                            <span>游戏链接 1</span>
+                        </a>
+                        <a href="https://www.123684.com/s/RJMhjv-niDGd" target="_blank" class="game-link">
+                            <i class="fas fa-gamepad"></i>
+                            <span>游戏链接 2</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 文件分享部分 -->
+                <div class="section-container">
+                    <h3 class="section-title">文件分享</h3>
+                    <div class="game-links">
+                        <a href="https://www.123865.com/s/RJMhjv-uHrGd" target="_blank" class="game-link">
+                            <i class="fas fa-file-download"></i>
+                            <span>文件下载</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div id="contact" class="page">
+                <h2>社交圈</h2>
+                
+                <!-- 社交媒体部分 -->
+                <div class="section-container">
+                    <h3 class="section-title">社交媒体</h3>
+                    <div class="social-icons">
+                        <a href="https://v.douyin.com/iSNL6ttW/" target="_blank" class="social-icon">
+                            <i class="fab fa-tiktok"></i>
+                            <span>抖音</span>
+                        </a>
+                        <a href="https://qm.qq.com/q/DAzYhH6qrK" target="_blank" class="social-icon">
+                            <i class="fab fa-qq"></i>
+                            <span>QQ</span>
+                        </a>
+                        <a href="https://b23.tv/sBk6ueq" target="_blank" class="social-icon">
+                            <i class="fas fa-play-circle"></i>
+                            <span>哔哩哔哩</span>
+                        </a>
+                        <a href="https://v.kuaishou.com/1uhY5h" target="_blank" class="social-icon">
+                            <i class="fas fa-video"></i>
+                            <span>快手</span>
+                        </a>
+                        <a href="https://www.xiaohongshu.com/user/profile/64a6d319000000002a037563?xhsshare=CopyLink&appuid=64a6d319000000002a037563&apptime=1729319568&share_id=6f59036296a34d9cb9b2d7f61a1f36eb" target="_blank" class="social-icon">
+                            <i class="fas fa-book-open"></i>
+                            <span>小红书</span>
+                        </a>
+                        <a href="#" class="social-icon" id="wechat-icon">
+                            <i class="fab fa-weixin"></i>
+                            <span>微信</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 友情链接部分 -->
+                <div class="section-container">
+                    <h3 class="section-title">友情链接</h3>
+                    <div class="friend-links">
+                        <!-- AI助手 -->
+                        <div class="link-category">
+                            <h4>AI助手</h4>
+                            <a href="https://yiyan.baidu.com/" target="_blank" class="friend-link">
+                                <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/svgs/solid/robot.svg" alt="文心一言">
+                                <span>文心一言</span>
+                            </a>
+                            <a href="https://www.doubao.com/chat/" target="_blank" class="friend-link">
+                                <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/svgs/solid/robot.svg" alt="豆包">
+                                <span>豆包</span>
+                            </a>
+                            <a href="https://hailuoai.com/chat" target="_blank" class="friend-link">
+                                <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/svgs/solid/robot.svg" alt="海螺AI">
+                                <span>海螺AI</span>
+                            </a>
+                            <a href="https://kimi.moonshot.cn/" target="_blank" class="friend-link">
+                                <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/svgs/solid/robot.svg" alt="Kimi">
+                                <span>Kimi智能助手</span>
+                            </a>
+                        </div>
+
+                        <!-- 云服务 -->
+                        <div class="link-category">
+                            <h4>云服务</h4>
+                            <a href="https://cloud.huawei.com/" target="_blank" class="friend-link">
+                                <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/svgs/solid/cloud.svg" alt="华为云空间">
+                                <span>华为云空间</span>
+                            </a>
+                            <a href="https://yun.vivo.com.cn/#/welcome" target="_blank" class="friend-link">
+                                <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/svgs/solid/cloud.svg" alt="vivo云服务">
+                                <span>vivo云服务</span>
+                            </a>
+                            <a href="https://i.mi.com/" target="_blank" class="friend-link">
+                                <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/svgs/solid/cloud.svg" alt="小米云服务">
+                                <span>小米云服务</span>
+                            </a>
+                            <a href="https://cloud.oppo.com/" target="_blank" class="friend-link">
+                                <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/svgs/solid/cloud.svg" alt="OPPO云服务">
+                                <span>OPPO云服务</span>
+                            </a>
+                        </div>
+
+                        <!-- 音乐平台 -->
+                        <div class="link-category">
+                            <h4>音乐平台</h4>
+                            <a href="https://www.kugou.com/" target="_blank" class="friend-link">
+                                <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/svgs/solid/music.svg" alt="酷狗音乐">
+                                <span>酷狗音乐</span>
+                            </a>
+                            <a href="https://y.qq.com/" target="_blank" class="friend-link">
+                                <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/svgs/solid/music.svg" alt="QQ音乐">
+                                <span>QQ音乐</span>
+                            </a>
+                            <a href="https://music.163.com/" target="_blank" class="friend-link">
+                                <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/svgs/solid/music.svg" alt="网易云音乐">
+                                <span>网易云音乐</span>
+                            </a>
+                            <a href="https://hifini.com/" target="_blank" class="friend-link">
+                                <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/svgs/solid/music.svg" alt="HiFiNi">
+                                <span>HiFiNi音乐</span>
+                            </a>
+                        </div>
+
+                        <!-- 视频平台 -->
+                        <div class="link-category">
+                            <h4>视频平台</h4>
+                            <a href="https://www.bilibili.com/" target="_blank" class="friend-link">
+                                <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/svgs/solid/play.svg" alt="哔哩哔哩">
+                                <span>哔哩哔哩</span>
+                            </a>
+                            <a href="https://www.douyin.com/" target="_blank" class="friend-link">
+                                <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/svgs/brands/tiktok.svg" alt="抖音">
+                                <span>抖音</span>
+                            </a>
+                            <a href="https://video.kuaishou.com/" target="_blank" class="friend-link">
+                                <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/svgs/solid/video.svg" alt="快手">
+                                <span>快手</span>
+                            </a>
+                            <a href="https://www.ixigua.com/" target="_blank" class="friend-link">
+                                <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/svgs/solid/play-circle.svg" alt="西瓜视频">
+                                <span>西瓜视频</span>
+                            </a>
+                            <a href="https://www.keke2.app/" target="_blank" class="friend-link">
+                                <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/svgs/solid/film.svg" alt="可可影视">
+                                <span>可可影视</span>
+                            </a>
+                        </div>
+
+                        <!-- 实用工具 -->
+                        <div class="link-category">
+                            <h4>实用工具</h4>
+                            <a href="https://sight.youdao.com/" target="_blank" class="friend-link">
+                                <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/svgs/solid/pen.svg" alt="网易听写">
+                                <span>网易听写</span>
+                            </a>
+                            <a href="https://tools.pdf24.org/zh/" target="_blank" class="friend-link">
+                                <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/svgs/solid/file-pdf.svg" alt="PDF工作">
+                                <span>PDF工作台</span>
+                            </a>
+                            <a href="https://app.netlify.com/" target="_blank" class="friend-link">
+                                <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/svgs/solid/cloud.svg" alt="Netlify">
+                                <span>Netlify</span>
+                            </a>
+                            <a href="https://github.com/" target="_blank" class="friend-link">
+                                <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/svgs/brands/github.svg" alt="GitHub">
+                                <span>GitHub</span>
+                            </a>
+                        </div>
+
+                        <!-- 教育资源 -->
+                        <div class="link-category">
+                            <h4>教育资源</h4>
+                            <a href="https://nanyang.xueanquan.com/" target="_blank" class="friend-link">
+                                <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/svgs/solid/shield-alt.svg" alt="安全教育平台">
+                                <span>安全教育平台</span>
+                            </a>
+                            <a href="https://basic.smartedu.cn/" target="_blank" class="friend-link">
+                                <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/svgs/solid/school.svg" alt="国家中小学教育平台">
+                                <span>国家中小学教育平台</span>
+                            </a>
+                        </div>
+
+                        <!-- 新闻媒体 -->
+                        <div class="link-category">
+                            <h4>新闻媒体</h4>
+                            <a href="http://tv.cctv.com/" target="_blank" class="friend-link">
+                                <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/svgs/solid/tv.svg" alt="中央电视台">
+                                <span>中央电视台</span>
+                            </a>
+                            <a href="http://paper.people.com.cn/" target="_blank" class="friend-link">
+                                <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/svgs/solid/newspaper.svg" alt="人民网">
+                                <span>人民网</span>
+                            </a>
+                            <a href="https://www.tianditu.gov.cn/" target="_blank" class="friend-link">
+                                <img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/svgs/solid/map.svg" alt="天地图">
+                                <span>天地图</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <nav id="nav">
+            <a href="#gallery" class="nav-item">相册</a>
+            <a href="#ai-chat" class="nav-item">AI对话</a>
+            <a href="#about" class="nav-item">关于我</a>
+            <a href="#files" class="nav-item">文件分享</a>
+            <a href="#contact" class="nav-item">社交圈</a>
+        </nav>
+    </div>
+
+    <!-- 添加微信二维码弹窗 -->
+    <div class="wechat-qr" id="wechat-qr">
+        <span class="close-qr" id="close-qr">&times;</span>
+        <img src="images/WeChat.jpg" alt="微信二维码">
+    </div>
+
+    <!-- 添加 Lightbox -->
+    <div id="lightbox" class="lightbox">
+        <div class="lightbox-content">
+            <div class="lightbox-image-container">
+                <img id="lightbox-image" src="" alt="放大图片">
+            </div>
+            <div class="lightbox-controls">
+                <input type="range" id="image-size-slider" min="50" max="200" value="100">
+                <button class="lightbox-button" onclick="downloadImage()">下载</button>
+                <button class="lightbox-button" onclick="closeLightbox()">关</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        // 将更新提醒相关的所有代码整合在一起
+        window.addEventListener('load', function() {
+            const modal = document.getElementById('update-modal');
+            const closeBtn = document.querySelector('.close-modal');
+            
+            // 显示更新提醒
+            if (modal) {
+                setTimeout(function() {
+                    modal.style.display = 'block';
+                }, 500);
+            }
+            
+            // 关闭按钮点击事件
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function() {
+                    if (modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+            }
+            
+            // 点击外部区域关闭
+            window.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+
+        const pages = document.querySelectorAll('.page');
+        const navItems = document.querySelectorAll('.nav-item');
+
+        function showPage(pageId) {
+            pages.forEach(page => page.style.display = 'none');
+            navItems.forEach(item => item.classList.remove('active'));
+            
+            const activePage = document.getElementById(pageId);
+            activePage.style.display = 'block';
+            document.querySelector(`a[href="#${pageId}"]`).classList.add('active');
+        }
+
+        navItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const pageId = e.target.getAttribute('href').substring(1);
+                showPage(pageId);
+            });
+        });
+
+        // 认显示相册页面
+        showPage('gallery');
+
+        // AI聊天功
+        const chatMessages = document.getElementById('chat-messages');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-message');
+
+        const group_id = "1846191764294090849";
+        const api_key = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJHcm91cE5hbWUiOiJMaW4iLCJVc2VyTmFtZSI6IkxpbiIsIkFjY291bnQiOiIiLCJTdWJqZWN0SUQiOiIxODQ2MTkxNzY0MzAyNDc5NDU3IiwiUGhvbmUiOiIxNzgzOTU0ODkxMSIsIkdyb3VwSUQiOiIxODQ2MTkxNzY0Mjk0MDkwODQ5IiwiUGFnZU5hbWUiOiIiLCJNYWlsIjoiIiwiQ3JlYXRlVGltZSI6IjIwMjQtMTAtMjAgMDk6NDI6MTAiLCJpc3MiOiJtaW5pbWF4In0.OqufkNIlVBh4Ts2U01DyfvfK09TvcF_eusMRVyNbjb8vb7U9-qeRR-FZaXqt1CVQVMo1grg14UvwEGApPZoqYwgV1r4V2SFdjBlb5xjKgDw5N-3IAHonfGq0ugWcBmag4smc0cEj-XaEeYNVRvUmbgUVS4SYi8L5poBk7NYrLA5IVppO48Iv7z3af8Krnn5NGupumY6ZkMWcJ42f48lSbObT-Km01u0y_xThy0RlKQfGF6YfEFUyQnRJx9Eq1ZjJr5fyuWi36AuKMGC0Vz6Koa2ZnLDvaiGjxjT6AbKmtbBEn_cvNHyZcN2YULZJiAXKc1iabxJtd1mpD4olIGcr9g";
+
+        const url = `https://api.minimax.chat/v1/text/chatcompletion_pro?GroupId=${group_id}`;
+        const headers = {
+            "Authorization": `Bearer ${api_key}`,
+            "Content-Type": "application/json"
+        };
+
+        const request_body = {
+            "model": "abab6.5-chat",
+            "tokens_to_generate": 1024,
+            "reply_constraints": {"sender_type": "BOT", "sender_name": "MM智能助理"},
+            "messages": [],
+            "bot_setting": [
+                {
+                    "bot_name": "MM智能助理",
+                    "content": "MM智能助理是一款由MiniMax自研的，没有调用其他产品的接口的大型语言模型。MiniMax是一家中国科技公司，一直致力于进行大模型相关的研究。",
+                }
+            ],
+        };
+
+        function addMessage(text, isUser) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = isUser ? '我' : 'AI';
+            
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            content.innerHTML = `<p>${text}</p>`;
+            
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(content);
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const userMessage = userInput.value.trim();
+            if (userMessage) {
+                addMessage(userMessage, true);
+                userInput.value = '';
+
+                request_body.messages.push(
+                    {"sender_type": "USER", "sender_name": "用户", "text": userMessage}
+                );
+
+                try {
+                    const response = await axios.post(url, request_body, { headers });
+                    if (response.data && response.data.reply) {
+                        const reply = response.data.reply;
+                        addMessage(reply, false);
+                        if (response.data.choices && response.data.choices[0] && response.data.choices[0].messages) {
+                            request_body.messages.push(...response.data.choices[0].messages);
+                        }
+                    } else {
+                        throw new Error('Invalid response from server');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    addMessage('抱歉，发生了错误，请稍后再试。', false);
+                }
+            }
+        }
+
+        sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // 微信二维码弹窗功能
+        const wechatIcon = document.getElementById('wechat-icon');
+        const wechatQR = document.getElementById('wechat-qr');
+        const closeQR = document.getElementById('close-qr');
+
+        wechatIcon.addEventListener('click', function(e) {
+            e.preventDefault();
+            wechatQR.style.display = 'block';
+        });
+
+        closeQR.addEventListener('click', function() {
+            wechatQR.style.display = 'none';
+        });
+
+        // 点击弹窗外部关闭弹窗
+        window.addEventListener('click', function(e) {
+            if (e.target === wechatQR) {
+                wechatQR.style.display = 'none';
+            }
+        });
+
+        document.getElementById('enter-arrow').addEventListener('click', function() {
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('app').style.display = 'block';
+            showPage('gallery'); // 显示相册页面
+        });
+
+        // 更新提示的关闭功能
+        document.querySelector('.close-modal').addEventListener('click', function() {
+            document.getElementById('update-modal').style.display = 'none';
+        });
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('update-modal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        };
+
+        let isDragging = false;
+        let startX, startY, translateX = 0, translateY = 0;
+
+        function openLightbox(src) {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImage = document.getElementById('lightbox-image');
+            const sizeSlider = document.getElementById('image-size-slider');
+            
+            lightboxImage.src = src;
+            lightboxImage.style.transform = 'scale(1) translate(0, 0)';
+            sizeSlider.value = 100;
+            translateX = 0;
+            translateY = 0;
+            
+            lightbox.style.display = 'flex';
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').style.display = 'none';
+            document.getElementById('lightbox-image').style.transform = 'scale(1) translate(0, 0)';
+            document.getElementById('image-size-slider').value = 100;
+            translateX = 0;
+            translateY = 0;
+        }
+
+        document.getElementById('image-size-slider').addEventListener('input', function() {
+            const lightboxImage = document.getElementById('lightbox-image');
+            const scale = this.value / 100;
+            lightboxImage.style.transform = `scale(${scale}) translate(${translateX}px, ${translateY}px)`;
+        });
+
+        const lightboxImageContainer = document.querySelector('.lightbox-image-container');
+
+        lightboxImageContainer.addEventListener('mousedown', startDrag);
+        lightboxImageContainer.addEventListener('mousemove', drag);
+        lightboxImageContainer.addEventListener('mouseup', endDrag);
+        lightboxImageContainer.addEventListener('mouseleave', endDrag);
+
+        function startDrag(e) {
+            isDragging = true;
+            startX = e.clientX - translateX;
+            startY = e.clientY - translateY;
+        }
+
+        function drag(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+            const x = e.clientX - startX;
+            const y = e.clientY - startY;
+            translateX = x;
+            translateY = y;
+            const lightboxImage = document.getElementById('lightbox-image');
+            const scale = document.getElementById('image-size-slider').value / 100;
+            lightboxImage.style.transform = `scale(${scale}) translate(${x}px, ${y}px)`;
+        }
+
+        function endDrag() {
+            isDragging = false;
+        }
+
+        document.getElementById('image-size-slider').addEventListener('input', function() {
+            const lightboxImage = document.getElementById('lightbox-image');
+            lightboxImage.style.width = this.value + '%';
+        });
+
+        function downloadImage() {
+            const lightboxImage = document.getElementById('lightbox-image');
+            const imageUrl = lightboxImage.src;
+            const imageName = imageUrl.split('/').pop(); // 获取片文件名
+            
+            // 在新窗口中打开图片
+            const newWindow = window.open('', '', 'width=800,height=600');
+            newWindow.document.write(`
+                <html>
+                <head>
+                    <title>${imageName}</title>
+                    <style>
+                        body {
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                            height: 100vh;
+                            margin: 0;
+                            font-family: Arial, sans-serif;
+                        }
+                        img {
+                            max-width: 80%;
+                            max-height: 70vh;
+                            object-fit: contain;
+                        }
+                        p {
+                            margin-top: 20px;
+                            font-size: 16px;
+                            text-align: center;
+                            padding: 10px;
+                            background-color: #f0f0f0;
+                            border-radius: 5px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <img src="${imageUrl}" alt="${imageName}">
+                    <p>右键点击图片并选择"图片另存为"下载</p>
+                </body>
+                </html>
+            `);
+        }
+
+        // 点击 Lightbox 背景关闭
+        document.getElementById('lightbox').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeLightbox();
+            }
+        });
+
+        // 现有的 JavaScript 代码保持不变，添加以下触摸事件支持
+
+        // 为触摸设备添加拖动支持
+        lightboxImageContainer.addEventListener('touchstart', handleTouchStart, false);
+        lightboxImageContainer.addEventListener('touchmove', handleTouchMove, false);
+        lightboxImageContainer.addEventListener('touchend', handleTouchEnd, false);
+
+        let touchStartX, touchStartY;
+
+        function handleTouchStart(e) {
+            const touch = e.touches[0];
+            touchStartX = touch.clientX - translateX;
+            touchStartY = touch.clientY - translateY;
+        }
+
+        function handleTouchMove(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const x = touch.clientX - touchStartX;
+            const y = touch.clientY - touchStartY;
+            translateX = x;
+            translateY = y;
+            const lightboxImage = document.getElementById('lightbox-image');
+            const scale = document.getElementById('image-size-slider').value / 100;
+            lightboxImage.style.transform = `scale(${scale}) translate(${x}px, ${y}px)`;
+        }
+
+        function handleTouchEnd() {
+            // 可以添加一些结束触摸时的逻辑
+        }
+    </script>
+
+    <!-- 在 body 标签内添加弹窗 HTML -->
+    <div id="update-modal" class="update-modal">
+        <div class="update-content">
+            <div class="update-header">
+                <h3>Leo's Blog 2.0版本来了</h3>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="update-body">
+                <div class="update-item">1. 添加了一些更好看的图片</div>
+                <div class="update-item">2. AI对话界面优化</div>
+                <div class="update-item">3. 关于我界面优化</div>
+                <div class="update-item">4. 联系我界面优化</div>
+                <div class="update-item">5. 整体性能优化</div>
+                <div class="update-item highlight">6. 链接统一移动到了第四个页面</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
